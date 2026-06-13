@@ -40,6 +40,9 @@ export const api = {
   getVitals: (userId) => request(`/vitals/${userId}`),
   updateVitals: (userId, payload) =>
     request(`/vitals/${userId}`, { method: "POST", body: JSON.stringify(payload) }),
+  getDailyReports: (userId) => request(`/daily-reports/${userId}`),
+  createDailyReport: (userId, payload) =>
+    request(`/daily-reports/${userId}`, { method: "POST", body: JSON.stringify(payload) }),
 
   getMedications: (userId) => request(`/medications/${userId}`),
   toggleMedication: (medId, taken) =>

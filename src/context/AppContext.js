@@ -14,6 +14,7 @@ export function AppProvider({ children }) {
   const [chatHistory, setChatHistory] = useState([]);
   const [doctors, setDoctors] = useState([]);
   const [appointments, setAppointments] = useState([]);
+  const [dailyReports, setDailyReports] = useState([]);
 
   const checkStatus = useCallback(async () => {
     try {
@@ -26,7 +27,7 @@ export function AppProvider({ children }) {
 
   const loadUserData = useCallback(async (userId) => {
     try {
-      const [vitalsList, meds, waterData, familyData, notifs, chat, docList, appts] = await Promise.all([
+      const [vitalsList, meds, waterData, familyData, notifs, chat, docList, appts, reports] = await Promise.all([
         api.getVitals(userId),
         api.getMedications(userId),
         api.getWater(userId),
@@ -35,6 +36,7 @@ export function AppProvider({ children }) {
         api.getChat(userId),
         api.getDoctors().catch(() => []),
         api.getAppointments(userId).catch(() => []),
+        api.getDailyReports(userId).catch(() => []),
       ]);
 
       if (vitalsList?.length) setVitals(vitalsList[vitalsList.length - 1]);
@@ -45,6 +47,7 @@ export function AppProvider({ children }) {
       setChatHistory(chat || []);
       if (docList?.length) setDoctors(docList);
       setAppointments(appts || []);
+      setDailyReports(reports || []);
     } catch (e) {
       console.warn("Failed to load user data:", e.message);
     }
@@ -66,6 +69,7 @@ export function AppProvider({ children }) {
     setNotifications([]);
     setChatHistory([]);
     setAppointments([]);
+    setDailyReports([]);
   };
 
   const value = {
@@ -88,6 +92,8 @@ export function AppProvider({ children }) {
     setDoctors,
     appointments,
     setAppointments,
+    dailyReports,
+    setDailyReports,
     checkStatus,
     loadUserData,
     login,
