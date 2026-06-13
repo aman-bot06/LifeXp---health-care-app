@@ -1,0 +1,30 @@
+{
+  "expo": {
+    "name": "lifexp-fixed",
+    "slug": "lifexp-fixed",
+    "version": "1.0.0",
+    "orientation": "portrait",
+    "scheme": "lifexpfixed",
+    "userInterfaceStyle": "automatic",
+    "ios": {},
+    "android": {
+      "predictiveBackGestureEnabled": false
+    },
+    "web": {
+      "output": "single",
+      "favicon": "./assets/images/favicon.png"
+    },
+    "plugins": [
+      [
+        "expo-splash-screen",
+        {
+          "backgroundColor": "#F0E6DF"
+        }
+      ],
+      "expo-sharing"
+    ],
+    "experiments": {
+      "reactCompiler": true
+    }
+  }
+}
