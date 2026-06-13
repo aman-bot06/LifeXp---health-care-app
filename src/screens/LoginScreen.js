@@ -8,7 +8,7 @@ import { colors, spacing, radius } from "../constants/theme";
 
 export default function LoginScreen({ navigation }) {
   const [ident, setIdent] = useState("");
-  const [password, setPassword] = useState("password123");
+  const [password, setPassword] = useState("");
   const [showPass, setShowPass] = useState(false);
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(false);
@@ -58,7 +58,7 @@ export default function LoginScreen({ navigation }) {
               value={password}
               onChangeText={setPassword}
               secureTextEntry={!showPass}
-              placeholder="••••••••"
+              placeholder=""
             />
             <TouchableOpacity style={styles.eyeBtn} onPress={() => setShowPass(!showPass)}>
               <Ionicons name={showPass ? "eye-off" : "eye"} size={18} color={colors.textMuted} />
