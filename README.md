@@ -1,56 +1,115 @@
-# Welcome to your Expo app 👋
+﻿# LifeXp Health Care App
 
-This is an [Expo](https://expo.dev) project created with [`create-expo-app`](https://www.npmjs.com/package/create-expo-app).
+LifeXp is a React Native + Expo healthcare application with a companion Express backend. It supports patient and doctor accounts, family health tracking, AI-powered chat assistance, doctor recommendations, analytics, and notifications.
 
-## Get started
+## Key Features
 
-1. Install dependencies
+- Patient and doctor registration flow
+- Family member tracking and health grouping
+- Personalized dashboard with daily wellness data
+- Doctor reports and recommendations for medicines, workouts, and nutrition
+- Analytics view for health trends over time
+- In-app notifications and AI chat assistant
+- Expo mobile app with cross-platform support for Android, iOS, and web
+- Backend API using Express and MongoDB
 
-   ```bash
-   npm install
-   ```
+## Repository Structure
 
-2. Start the app
+- `App.js` - root Expo app entry point
+- `src/` - React Native app source code
+- `src/navigation/` - navigation stack and bottom tab layout
+- `src/screens/` - app screens for login, dashboard, family, chat, analytics, reports, and more
+- `src/api/client.js` - app API client configuration
+- `life_xp-backend/` - Express backend service
+- `life_xp-backend/server.js` - backend server entry point
+- `life_xp-backend/routes/` - backend API routes
+- `life_xp-backend/db/` - MongoDB connection helper
 
-   ```bash
-   npx expo start
-   ```
+## Local Setup
 
-In the output, you'll find options to open the app in a
+### 1. Install dependencies
 
-- [development build](https://docs.expo.dev/develop/development-builds/introduction/)
-- [Android emulator](https://docs.expo.dev/workflow/android-studio-emulator/)
-- [iOS simulator](https://docs.expo.dev/workflow/ios-simulator/)
-- [Expo Go](https://expo.dev/go), a limited sandbox for trying out app development with Expo
-
-You can start developing by editing the files inside the **app** directory. This project uses [file-based routing](https://docs.expo.dev/router/introduction).
-
-## Get a fresh project
-
-When you're ready, run:
+From the repo root:
 
 ```bash
-npm run reset-project
+npm install
 ```
 
-This command will move the starter code to the **app-example** directory and create a blank **app** directory where you can start developing.
+Then install backend dependencies:
 
-### Other setup steps
+```bash
+cd life_xp-backend
+npm install
+cd ..
+```
 
-- To set up ESLint for linting, run `npx expo lint`, or follow our guide on ["Using ESLint and Prettier"](https://docs.expo.dev/guides/using-eslint/)
-- If you'd like to set up unit testing, follow our guide on ["Unit Testing with Jest"](https://docs.expo.dev/develop/unit-testing/)
-- Learn more about the TypeScript setup in this template in our guide on ["Using TypeScript"](https://docs.expo.dev/guides/typescript/)
+### 2. Start the backend
 
-## Learn more
+From the backend folder:
 
-To learn more about developing your project with Expo, look at the following resources:
+```bash
+cd life_xp-backend
+npm run dev
+```
 
-- [Expo documentation](https://docs.expo.dev/): Learn fundamentals, or go into advanced topics with our [guides](https://docs.expo.dev/guides).
-- [Learn Expo tutorial](https://docs.expo.dev/tutorial/introduction/): Follow a step-by-step tutorial where you'll create a project that runs on Android, iOS, and the web.
+By default the backend listens on `http://localhost:3001` and exposes API routes under `/api`.
 
-## Join the community
+### 3. Start the Expo app
 
-Join our community of developers creating universal apps.
+From the repo root:
 
-- [Expo on GitHub](https://github.com/expo/expo): View our open source platform and contribute.
-- [Discord community](https://chat.expo.dev): Chat with Expo users and ask questions.
+```bash
+npm start
+```
+
+Then choose your target device:
+
+- Android emulator
+- iOS simulator
+- web browser
+- physical device via Expo Go
+
+### 4. Backend connection notes
+
+The app uses `src/api/client.js` to compute the backend host:
+
+- Android emulator: `10.0.2.2`
+- iOS simulator / web: `localhost`
+- Physical device: use your development machine IP and set `EXPO_PUBLIC_API_URL`
+
+If you need a custom API base URL, set `EXPO_PUBLIC_API_URL` before starting Expo.
+
+## Available Scripts
+
+From the root:
+
+- `npm start` - launch Expo
+- `npm run android` - start Expo for Android
+- `npm run ios` - start Expo for iOS
+- `npm run web` - start Expo for web
+- `npm run lint` - lint app source files
+- `npm run reset-project` - reset starter content
+
+From the backend:
+
+- `npm run dev` - run backend in watch mode
+- `npm start` - run backend server once
+
+## Environment
+
+The backend uses environment variables loaded from `.env` via `dotenv`.
+
+Common values:
+
+- `PORT` - backend HTTP port (defaults to `3001`)
+- MongoDB connection info is configured in `life_xp-backend/db/mongo.js`
+
+## Notes
+
+- The app is built with Expo SDK 56 and React Native 0.85.
+- The backend is a lightweight Express API with CORS and JSON body parsing.
+- The app supports voice assist, AI chat, doctor reports, and health analytics.
+
+## License
+
+This project is licensed under the terms of the existing `LICENSE` file.
