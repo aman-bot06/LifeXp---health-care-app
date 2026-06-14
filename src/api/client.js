@@ -36,6 +36,8 @@ export const api = {
     request("/auth/register-doctor", { method: "POST", body: JSON.stringify(payload) }),
 
   getDoctors: () => request("/doctors"),
+  searchUsers: (query, excludeUserId) =>
+    request(`/users/search?q=${encodeURIComponent(query)}&excludeUserId=${encodeURIComponent(excludeUserId || "")}`),
 
   getVitals: (userId) => request(`/vitals/${userId}`),
   updateVitals: (userId, payload) =>
@@ -43,12 +45,21 @@ export const api = {
   getDailyReports: (userId) => request(`/daily-reports/${userId}`),
   createDailyReport: (userId, payload) =>
     request(`/daily-reports/${userId}`, { method: "POST", body: JSON.stringify(payload) }),
+  getDoctorReports: (userId) => request(`/doctor-reports/${userId}`),
+  createDoctorReport: (userId, payload) =>
+    request(`/doctor-reports/${userId}`, { method: "POST", body: JSON.stringify(payload) }),
 
   getMedications: (userId) => request(`/medications/${userId}`),
+  addMedication: (userId, payload) =>
+    request(`/medications/${userId}`, { method: "POST", body: JSON.stringify(payload) }),
+  updateMedication: (medId, payload) =>
+    request(`/medications/${medId}`, { method: "PUT", body: JSON.stringify(payload) }),
   toggleMedication: (medId, taken) =>
     request(`/medications/toggle/${medId}`, { method: "POST", body: JSON.stringify({ taken }) }),
 
   getWater: (userId) => request(`/water/${userId}`),
+  updateWater: (userId, payload) =>
+    request(`/water/${userId}`, { method: "PUT", body: JSON.stringify(payload) }),
   logWater: (userId) => request(`/water/log/${userId}`, { method: "POST" }),
 
   getFamily: (userId) => request(`/family/${userId}`),

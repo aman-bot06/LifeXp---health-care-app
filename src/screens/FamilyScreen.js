@@ -66,6 +66,7 @@ export default function FamilyScreen({ navigation }) {
                   {member.fullName}{" "}
                   <Text style={styles.relationship}>{member.relationship}</Text>
                 </Text>
+                <Text style={styles.memberId}>{member.userCode || member.memberId}</Text>
                 <Text style={styles.vitalsScore}>Vitals Score: 94%</Text>
               </View>
               <TouchableOpacity
@@ -133,6 +134,7 @@ const styles = StyleSheet.create({
   avatar: { width: 44, height: 44, borderRadius: 22 },
   memberName: { fontSize: 13, fontWeight: "700", color: colors.text },
   relationship: { fontSize: 10, fontWeight: "400", color: colors.textMuted, fontStyle: "italic" },
+  memberId: { fontSize: 9, color: colors.textMuted, marginTop: 2, fontFamily: "monospace" },
   vitalsScore: { fontSize: 10, color: colors.primary, fontWeight: "600", marginTop: 2 },
   viewBtn: { backgroundColor: "#F5F5F4", paddingHorizontal: 10, paddingVertical: 6, borderRadius: radius.sm },
   viewBtnText: { fontSize: 10, fontWeight: "600", color: colors.text },

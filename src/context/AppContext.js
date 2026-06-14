@@ -1,4 +1,5 @@
 import React, { createContext, useContext, useState, useCallback } from "react";
+import * as Speech from "expo-speech";
 import { api } from "../api/client";
 
 const AppContext = createContext(null);
@@ -15,6 +16,8 @@ export function AppProvider({ children }) {
   const [doctors, setDoctors] = useState([]);
   const [appointments, setAppointments] = useState([]);
   const [dailyReports, setDailyReports] = useState([]);
+  const [doctorReports, setDoctorReports] = useState([]);
+  const [voiceAssist, setVoiceAssistState] = useState(true);
 
   const checkStatus = useCallback(async () => {
     try {
@@ -27,7 +30,7 @@ export function AppProvider({ children }) {
 
   const loadUserData = useCallback(async (userId) => {
     try {
-      const [vitalsList, meds, waterData, familyData, notifs, chat, docList, appts, reports] = await Promise.all([
+      const [vitalsList, meds, waterData, familyData, notifs, chat, docList, appts, reports, doctorReportData] = await Promise.all([
         api.getVitals(userId),
         api.getMedications(userId),
         api.getWater(userId),
@@ -37,6 +40,7 @@ export function AppProvider({ children }) {
         api.getDoctors().catch(() => []),
         api.getAppointments(userId).catch(() => []),
         api.getDailyReports(userId).catch(() => []),
+        api.getDoctorReports(userId).catch(() => []),
       ]);
 
       if (vitalsList?.length) setVitals(vitalsList[vitalsList.length - 1]);
@@ -48,6 +52,7 @@ export function AppProvider({ children }) {
       if (docList?.length) setDoctors(docList);
       setAppointments(appts || []);
       setDailyReports(reports || []);
+      setDoctorReports(doctorReportData || []);
     } catch (e) {
       console.warn("Failed to load user data:", e.message);
     }
@@ -70,7 +75,36 @@ export function AppProvider({ children }) {
     setChatHistory([]);
     setAppointments([]);
     setDailyReports([]);
+    setDoctorReports([]);
   };
+
+  const setVoiceAssist = useCallback((enabled) => {
+    setVoiceAssistState(enabled);
+    if (!enabled) {
+      Speech.stop();
+      return;
+    }
+    Speech.stop();
+    Speech.speak("Voice help is on.", {
+      language: "en-US",
+      pitch: 1,
+      rate: 0.86,
+    });
+  }, []);
+
+  const announce = useCallback(
+    (message) => {
+      if (voiceAssist && message) {
+        Speech.stop();
+        Speech.speak(message, {
+          language: "en-US",
+          pitch: 1,
+          rate: 0.86,
+        });
+      }
+    },
+    [voiceAssist]
+  );
 
   const value = {
     activeUser,
@@ -94,6 +128,11 @@ export function AppProvider({ children }) {
     setAppointments,
     dailyReports,
     setDailyReports,
+    doctorReports,
+    setDoctorReports,
+    voiceAssist,
+    setVoiceAssist,
+    announce,
     checkStatus,
     loadUserData,
     login,

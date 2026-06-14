@@ -1,8 +1,9 @@
 import React from "react";
-import { TouchableOpacity, View, Text, StyleSheet } from "react-native";
+import { Alert, Switch, TouchableOpacity, useWindowDimensions, View, Text, StyleSheet } from "react-native";
 import { createNativeStackNavigator } from "@react-navigation/native-stack";
 import { createBottomTabNavigator } from "@react-navigation/bottom-tabs";
 import { Ionicons } from "@expo/vector-icons";
+import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { useApp } from "../context/AppContext";
 import { colors } from "../constants/theme";
 
@@ -22,6 +23,7 @@ import ChatScreen from "../screens/ChatScreen";
 import NotificationsScreen from "../screens/NotificationsScreen";
 import AnalyticsScreen from "../screens/AnalyticsScreen";
 import DailyReportScreen from "../screens/DailyReportScreen";
+import DoctorReportsScreen from "../screens/DoctorReportsScreen";
 
 const Stack = createNativeStackNavigator();
 const Tab = createBottomTabNavigator();
@@ -47,16 +49,28 @@ function HeaderAlertsButton({ navigation }) {
 
 function HeaderLogoutButton() {
   const { logout } = useApp();
+  const confirmExit = () => {
+    Alert.alert("Exit LifeXp?", "Do you want to exit your account?", [
+      { text: "Cancel", style: "cancel" },
+      { text: "Exit", style: "destructive", onPress: logout },
+    ]);
+  };
+
   return (
-    <TouchableOpacity onPress={logout} style={styles.headerIconBtn}>
+    <TouchableOpacity onPress={confirmExit} style={styles.headerIconBtn}>
       <Ionicons name="log-out-outline" size={20} color={colors.primary} />
     </TouchableOpacity>
   );
 }
 
 function LifeXpTabBar({ state, descriptors, navigation }) {
+  const { voiceAssist, setVoiceAssist, announce } = useApp();
+  const insets = useSafeAreaInsets();
+  const { width } = useWindowDimensions();
+  const compact = width < 370;
+
   return (
-    <View style={styles.tabShell}>
+    <View style={[styles.tabShell, { paddingBottom: Math.max(8, insets.bottom) }]}>
       <TouchableOpacity
         activeOpacity={0.85}
         style={styles.assistantBar}
@@ -67,10 +81,35 @@ function LifeXpTabBar({ state, descriptors, navigation }) {
         </View>
         <View style={{ flex: 1 }}>
           <Text style={styles.assistantTitle}>LifeXp AI Assistant</Text>
-          <Text style={styles.assistantSub}>Ask about reports, symptoms, medicine, or trends</Text>
+          {!compact ? <Text style={styles.assistantSub}>Ask about reports, symptoms, medicine, or trends</Text> : null}
         </View>
         <Ionicons name="chevron-forward" size={18} color={colors.primary} />
       </TouchableOpacity>
+
+      <View style={styles.utilityRow}>
+        <TouchableOpacity
+          activeOpacity={0.85}
+          style={styles.reportsBtn}
+          onPress={() => {
+            announce("Opening doctor reports. This section contains doctor recommendations for medicine, workouts, and food.");
+            navigation.getParent()?.navigate("DoctorReports");
+          }}
+        >
+          <Ionicons name="document-text-outline" size={16} color={colors.primary} />
+          <Text style={styles.reportsText}>Doctor Reports</Text>
+        </TouchableOpacity>
+        <View style={styles.voiceMini}>
+          <Ionicons name={voiceAssist ? "volume-high" : "volume-mute"} size={15} color={colors.primary} />
+          {!compact ? <Text style={styles.voiceMiniText}>Voice</Text> : null}
+          <Switch
+            value={voiceAssist}
+            onValueChange={(next) => {
+              setVoiceAssist(next);
+              if (next) announce("Voice help is on.");
+            }}
+          />
+        </View>
+      </View>
 
       <View style={styles.tabRow}>
         {state.routes.map((route, index) => {
@@ -87,6 +126,7 @@ function LifeXpTabBar({ state, descriptors, navigation }) {
             });
 
             if (!isFocused && !event.defaultPrevented) {
+              announce(`${label} tab opened.`);
               navigation.navigate(route.name);
             }
           };
@@ -238,6 +278,14 @@ export default function AppNavigator() {
               headerRight: () => <HeaderAlertsButton navigation={navigation} />,
             })}
           />
+          <Stack.Screen
+            name="DoctorReports"
+            component={DoctorReportsScreen}
+            options={({ navigation }) => ({
+              headerTitle: "Doctor Reports",
+              headerRight: () => <HeaderAlertsButton navigation={navigation} />,
+            })}
+          />
         </>
       )}
     </Stack.Navigator>
@@ -297,6 +345,33 @@ const styles = StyleSheet.create({
   },
   assistantTitle: { fontSize: 12, fontWeight: "800", color: colors.text },
   assistantSub: { fontSize: 9, color: colors.textMuted, marginTop: 1 },
+  utilityRow: { flexDirection: "row", gap: 8, marginBottom: 8 },
+  reportsBtn: {
+    flex: 1,
+    minHeight: 40,
+    flexDirection: "row",
+    alignItems: "center",
+    justifyContent: "center",
+    gap: 6,
+    borderRadius: 10,
+    backgroundColor: colors.surfaceAlt,
+    borderWidth: 1,
+    borderColor: colors.border,
+  },
+  reportsText: { fontSize: 11, fontWeight: "800", color: colors.primary },
+  voiceMini: {
+    minHeight: 40,
+    flexDirection: "row",
+    alignItems: "center",
+    gap: 5,
+    paddingLeft: 10,
+    paddingRight: 4,
+    borderRadius: 10,
+    backgroundColor: colors.surfaceAlt,
+    borderWidth: 1,
+    borderColor: colors.border,
+  },
+  voiceMiniText: { fontSize: 10, fontWeight: "800", color: colors.text },
   tabRow: { height: 58, flexDirection: "row", alignItems: "center", justifyContent: "space-between" },
   tabItem: { flex: 1, alignItems: "center", justifyContent: "center", gap: 3, minWidth: 0 },
   reportTabItem: { transform: [{ translateY: -4 }] },

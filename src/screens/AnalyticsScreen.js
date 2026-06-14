@@ -78,8 +78,66 @@ function buildReportHtml({ user, range, report }) {
   `;
 }
 
+function clampPercent(value, max) {
+  return Math.max(5, Math.min(100, Math.round((Number(value || 0) / max) * 100)));
+}
+
+function TrendGraph({ title, subtitle, data, color, unit, max }) {
+  const values = data.length ? data : [0, 0, 0, 0, 0, 0, 0];
+  const latest = values[values.length - 1] || 0;
+  const min = Math.min(...values.filter((value) => value > 0), latest || 0);
+  const peak = Math.max(...values, latest || 0);
+
+  return (
+    <View style={styles.graphCard}>
+      <View style={styles.graphHead}>
+        <View style={{ flex: 1 }}>
+          <Text style={styles.graphTitle}>{title}</Text>
+          <Text style={styles.graphSub}>{subtitle}</Text>
+        </View>
+        <View style={styles.graphValueBox}>
+          <Text style={styles.graphValue}>{latest || "--"}</Text>
+          <Text style={styles.graphUnit}>{unit}</Text>
+        </View>
+      </View>
+      <View style={styles.graphBody}>
+        {values.map((value, index) => {
+          const height = clampPercent(value, max);
+          return (
+            <View key={`${title}-${index}`} style={styles.graphColumn}>
+              <View style={styles.graphTrack}>
+                <View style={[styles.graphBar, { height: `${height}%`, backgroundColor: color }]} />
+                <View style={[styles.graphDot, { bottom: `${height}%`, borderColor: color }]} />
+              </View>
+              <Text style={styles.graphTick}>{index + 1}</Text>
+            </View>
+          );
+        })}
+      </View>
+      <View style={styles.graphFoot}>
+        <Text style={styles.graphFootText}>Low {min || "--"} {unit}</Text>
+        <Text style={styles.graphFootText}>High {peak || "--"} {unit}</Text>
+      </View>
+    </View>
+  );
+}
+
+function ProgressRail({ label, value, color }) {
+  return (
+    <View style={styles.progressBlock}>
+      <View style={styles.progressTop}>
+        <Text style={styles.progressLabel}>{label}</Text>
+        <Text style={styles.progressValue}>{value}%</Text>
+      </View>
+      <View style={styles.progressTrack}>
+        <View style={[styles.progressFill, { width: `${Math.min(100, value)}%`, backgroundColor: color }]} />
+      </View>
+    </View>
+  );
+}
+
 export default function AnalyticsScreen() {
-  const { activeUser, vitals, medications, water, appointments, notifications } = useApp();
+  const { activeUser, vitals, medications, water, appointments, notifications, dailyReports } = useApp();
   const [selectedRange, setSelectedRange] = useState(RANGES[0]);
   const [working, setWorking] = useState(false);
 
@@ -91,10 +149,23 @@ export default function AnalyticsScreen() {
     const hydrationPercent = waterTarget ? Math.min(100, Math.round((waterAmount / waterTarget) * 100)) : 0;
     const periodLabel = selectedRange.key === "yesterday" ? "yesterday" : `the last ${selectedRange.label.toLowerCase()}`;
 
+    const reportSeries = [...(dailyReports || [])].sort((a, b) => new Date(a.date) - new Date(b.date)).slice(-7);
+    const trendBase = reportSeries.length
+      ? reportSeries
+      : [
+          { heartRate: vitals.heartRate || 72, bloodSugar: vitals.bloodSugar || 94, bloodPressure: vitals.bloodPressure || "120/80" },
+        ];
+    const heartSeries = trendBase.map((item) => item.heartRate || 0);
+    const sugarSeries = trendBase.map((item) => item.bloodSugar || 0);
+    const bpSeries = trendBase.map((item) => Number(String(item.bloodPressure || "0/0").split("/")[0]) || 0);
+
     return {
       heartRate: vitals.heartRate || 72,
       bloodPressure: vitals.bloodPressure || "120/80",
       bloodSugar: vitals.bloodSugar || 94,
+      heartSeries,
+      sugarSeries,
+      bpSeries,
       medications,
       water: {
         currentAmount: waterAmount,
@@ -107,7 +178,7 @@ export default function AnalyticsScreen() {
       notificationsCount: notifications.length,
       summary: `For ${periodLabel}, vitals are based on the latest Lifexp readings. Medication completion is ${medCount ? `${takenCount}/${medCount}` : "not yet recorded"} and hydration progress is ${hydrationPercent}%.`,
     };
-  }, [appointments.length, medications, notifications.length, selectedRange, vitals, water]);
+  }, [appointments.length, dailyReports, medications, notifications.length, selectedRange, vitals, water]);
 
   const createPdf = async (mode) => {
     setWorking(true);
@@ -180,6 +251,53 @@ export default function AnalyticsScreen() {
         </View>
       </View>
 
+      <TrendGraph
+        title="Health trend"
+        subtitle="Heart rate from saved reports"
+        data={report.heartSeries}
+        color="#F43F5E"
+        unit="bpm"
+        max={150}
+      />
+
+      <TrendGraph
+        title="Sugar trend"
+        subtitle="Blood sugar from saved reports"
+        data={report.sugarSeries}
+        color={colors.sky}
+        unit="mg/dL"
+        max={240}
+      />
+
+      <TrendGraph
+        title="Blood pressure systolic"
+        subtitle="Top BP number from saved reports"
+        data={report.bpSeries}
+        color={colors.primary}
+        unit="mmHg"
+        max={190}
+      />
+
+      <View style={styles.reportCard}>
+        <Text style={styles.cardTitle}>Care visuals</Text>
+        <ProgressRail label="Routine prescriptions" value={report.medicationScore} color={colors.success} />
+        <ProgressRail label="Hydration target" value={report.hydrationPercent} color={colors.sky} />
+        <View style={styles.pulseGrid}>
+          <View style={styles.pulseBox}>
+            <Text style={styles.pulseNumber}>{report.appointmentsCount}</Text>
+            <Text style={styles.pulseLabel}>Appointments</Text>
+          </View>
+          <View style={styles.pulseBox}>
+            <Text style={styles.pulseNumber}>{report.notificationsCount}</Text>
+            <Text style={styles.pulseLabel}>Alerts</Text>
+          </View>
+          <View style={styles.pulseBox}>
+            <Text style={styles.pulseNumber}>{dailyReports.length}</Text>
+            <Text style={styles.pulseLabel}>Reports</Text>
+          </View>
+        </View>
+      </View>
+
       <View style={styles.reportCard}>
         <Text style={styles.cardTitle}>{selectedRange.label} Report</Text>
         <Text style={styles.summary}>{report.summary}</Text>
@@ -240,6 +358,80 @@ const styles = StyleSheet.create({
   },
   metricValue: { fontSize: 16, fontWeight: "800", color: colors.text, marginTop: 8 },
   metricLabel: { fontSize: 9, color: colors.textMuted, marginTop: 2 },
+  graphCard: {
+    backgroundColor: colors.surface,
+    borderRadius: radius.lg,
+    borderWidth: 1,
+    borderColor: colors.border,
+    padding: spacing.md,
+    marginBottom: spacing.md,
+  },
+  graphHead: { flexDirection: "row", alignItems: "center", justifyContent: "space-between", gap: 10, marginBottom: 12 },
+  graphTitle: { fontSize: 14, fontWeight: "900", color: colors.text },
+  graphSub: { fontSize: 10, color: colors.textMuted, marginTop: 2 },
+  graphValueBox: {
+    minWidth: 68,
+    alignItems: "center",
+    padding: 8,
+    borderRadius: radius.md,
+    backgroundColor: colors.surfaceAlt,
+    borderWidth: 1,
+    borderColor: colors.border,
+  },
+  graphValue: { fontSize: 18, fontWeight: "900", color: colors.text, fontVariant: ["tabular-nums"] },
+  graphUnit: { fontSize: 9, color: colors.textMuted, marginTop: 1 },
+  graphBody: {
+    height: 142,
+    flexDirection: "row",
+    alignItems: "flex-end",
+    gap: 8,
+    paddingTop: 8,
+    paddingBottom: 4,
+  },
+  graphColumn: { flex: 1, height: "100%", alignItems: "center", gap: 5 },
+  graphTrack: {
+    flex: 1,
+    width: "100%",
+    borderRadius: radius.full,
+    backgroundColor: colors.surfaceAlt,
+    justifyContent: "flex-end",
+    overflow: "visible",
+  },
+  graphBar: { width: "100%", minHeight: 4, borderRadius: radius.full },
+  graphDot: {
+    position: "absolute",
+    alignSelf: "center",
+    width: 10,
+    height: 10,
+    borderRadius: 5,
+    backgroundColor: colors.surface,
+    borderWidth: 2,
+  },
+  graphTick: { fontSize: 9, color: colors.textMuted, fontVariant: ["tabular-nums"] },
+  graphFoot: { flexDirection: "row", justifyContent: "space-between", marginTop: 8 },
+  graphFootText: { fontSize: 10, color: colors.textMuted, fontWeight: "700" },
+  visualGrid: { flexDirection: "row", gap: 8, marginBottom: spacing.md },
+  visualCard: {
+    flex: 1,
+    backgroundColor: colors.surface,
+    borderRadius: radius.lg,
+    borderWidth: 1,
+    borderColor: colors.border,
+    padding: spacing.md,
+    marginBottom: spacing.md,
+  },
+  visualHead: { flexDirection: "row", alignItems: "center", justifyContent: "space-between", gap: 8, marginBottom: 12 },
+  visualValue: { fontSize: 11, fontWeight: "800", color: colors.primary },
+  bars: { height: 92, flexDirection: "row", alignItems: "flex-end", gap: 7 },
+  barTrack: {
+    flex: 1,
+    height: "100%",
+    borderRadius: radius.full,
+    backgroundColor: colors.surfaceAlt,
+    justifyContent: "flex-end",
+    overflow: "hidden",
+  },
+  barFill: { width: "100%", borderRadius: radius.full },
   reportCard: {
     backgroundColor: colors.surface,
     borderRadius: radius.lg,
@@ -250,6 +442,24 @@ const styles = StyleSheet.create({
   },
   cardTitle: { fontSize: 14, fontWeight: "800", color: colors.text },
   summary: { fontSize: 12, lineHeight: 18, color: colors.textMuted, marginVertical: spacing.md },
+  progressBlock: { gap: 7, marginTop: 12 },
+  progressTop: { flexDirection: "row", justifyContent: "space-between", alignItems: "center" },
+  progressLabel: { fontSize: 11, fontWeight: "700", color: colors.text },
+  progressValue: { fontSize: 11, fontWeight: "800", color: colors.textMuted },
+  progressTrack: { height: 10, borderRadius: radius.full, backgroundColor: colors.surfaceAlt, overflow: "hidden" },
+  progressFill: { height: "100%", borderRadius: radius.full },
+  pulseGrid: { flexDirection: "row", gap: 8, marginTop: spacing.md },
+  pulseBox: {
+    flex: 1,
+    alignItems: "center",
+    padding: 10,
+    borderRadius: radius.md,
+    backgroundColor: colors.surfaceAlt,
+    borderWidth: 1,
+    borderColor: colors.border,
+  },
+  pulseNumber: { fontSize: 18, fontWeight: "900", color: colors.text },
+  pulseLabel: { fontSize: 9, color: colors.textMuted, marginTop: 2 },
   reportRow: {
     flexDirection: "row",
     justifyContent: "space-between",

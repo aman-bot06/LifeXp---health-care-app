@@ -8,7 +8,6 @@ import {
   TouchableOpacity,
   KeyboardAvoidingView,
   Platform,
-  ScrollView,
 } from "react-native";
 import { Ionicons } from "@expo/vector-icons";
 import Animated, { FadeInUp, FadeIn } from "react-native-reanimated";
@@ -49,6 +48,7 @@ export default function ChatScreen() {
   const [input, setInput] = useState("");
   const [loading, setLoading] = useState(false);
   const listRef = useRef(null);
+  const tempIdRef = useRef(0);
 
   useEffect(() => {
     if (chatHistory.length) {
@@ -61,9 +61,10 @@ export default function ChatScreen() {
     if (!msg || loading) return;
     setInput("");
     setLoading(true);
+    tempIdRef.current += 1;
 
     const tempUser = {
-      _id: `temp_${Date.now()}`,
+      _id: `temp_${tempIdRef.current}`,
       sender: "user",
       text: msg,
       timestamp: new Date().toLocaleTimeString("en-US", { hour: "numeric", minute: "2-digit" }),
@@ -81,7 +82,7 @@ export default function ChatScreen() {
         ...prev.filter((m) => m._id !== tempUser._id),
         tempUser,
         {
-          _id: `err_${Date.now()}`,
+          _id: `err_${tempIdRef.current}`,
           sender: "assistant",
           text: "I'm having trouble connecting. Please check your network and try again.",
           timestamp: new Date().toLocaleTimeString("en-US", { hour: "numeric", minute: "2-digit" }),
@@ -116,13 +117,17 @@ export default function ChatScreen() {
         ListFooterComponent={loading ? <TypingIndicator /> : null}
       />
 
-      <ScrollView horizontal showsHorizontalScrollIndicator={false} style={styles.pills} contentContainerStyle={styles.pillsContent}>
+      <View style={styles.pills}>
         {QUICK_PILLS.map((pill) => (
-          <TouchableOpacity key={pill} style={styles.pill} onPress={() => setInput(`Can you tell me about ${pill.toLowerCase()}?`)}>
+          <TouchableOpacity
+            key={pill}
+            style={styles.pill}
+            onPress={() => send(`Can you tell me about ${pill.toLowerCase()}?`)}
+          >
             <Text style={styles.pillText}>{pill}</Text>
           </TouchableOpacity>
         ))}
-      </ScrollView>
+      </View>
 
       <View style={styles.inputRow}>
         <TextInput
@@ -169,8 +174,16 @@ const styles = StyleSheet.create({
   dots: { flexDirection: "row", gap: 4 },
   dot: { width: 8, height: 8, borderRadius: 4, backgroundColor: colors.violet },
   typingText: { fontSize: 10, color: colors.textMuted },
-  pills: { backgroundColor: colors.surface, borderTopWidth: 1, borderTopColor: colors.border },
-  pillsContent: { flexDirection: "row", paddingHorizontal: spacing.md, paddingVertical: 6, gap: 6 },
+  pills: {
+    flexDirection: "row",
+    flexWrap: "wrap",
+    backgroundColor: colors.surface,
+    borderTopWidth: 1,
+    borderTopColor: colors.border,
+    paddingHorizontal: spacing.md,
+    paddingVertical: 8,
+    gap: 6,
+  },
   pill: { paddingHorizontal: 10, paddingVertical: 6, backgroundColor: "#FAFAF9", borderRadius: radius.sm, borderWidth: 1, borderColor: colors.border },
   pillText: { fontSize: 10, color: colors.textMuted, fontWeight: "600" },
   inputRow: { flexDirection: "row", padding: spacing.md, gap: 8, backgroundColor: colors.surface, borderTopWidth: 1, borderTopColor: colors.border },

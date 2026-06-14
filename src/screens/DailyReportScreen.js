@@ -5,6 +5,7 @@ import {
   Platform,
   ScrollView,
   StyleSheet,
+  Switch,
   Text,
   TextInput,
   TouchableOpacity,
@@ -17,7 +18,7 @@ import { useApp } from "../context/AppContext";
 import { api } from "../api/client";
 import { colors, radius, spacing } from "../constants/theme";
 
-function Field({ icon, label, value, onChangeText, keyboardType, placeholder }) {
+function Field({ icon, label, value, onChangeText, keyboardType, placeholder, onFocus }) {
   return (
     <View style={styles.field}>
       <View style={styles.fieldLabelRow}>
@@ -31,6 +32,7 @@ function Field({ icon, label, value, onChangeText, keyboardType, placeholder }) 
         placeholder={placeholder}
         placeholderTextColor={colors.textMuted}
         style={styles.input}
+        onFocus={onFocus}
       />
     </View>
   );
@@ -42,13 +44,14 @@ function formatReportDate(value) {
 }
 
 export default function DailyReportScreen() {
-  const { activeUser, vitals, setVitals, dailyReports, setDailyReports } = useApp();
+  const { activeUser, vitals, setVitals, dailyReports, setDailyReports, voiceAssist, setVoiceAssist, announce } = useApp();
   const [heartRate, setHeartRate] = useState(String(vitals?.heartRate || ""));
   const [bloodSugar, setBloodSugar] = useState(String(vitals?.bloodSugar || ""));
   const [systolic, setSystolic] = useState(String(vitals?.bloodPressure || "120/80").split("/")[0] || "");
   const [diastolic, setDiastolic] = useState(String(vitals?.bloodPressure || "120/80").split("/")[1] || "");
   const [notes, setNotes] = useState("");
   const [saving, setSaving] = useState(false);
+  const [guideText, setGuideText] = useState("Tap a box and I will tell you what to fill.");
 
   const recentReports = useMemo(
     () => [...dailyReports].sort((a, b) => new Date(b.date) - new Date(a.date)).slice(0, 6),
@@ -92,6 +95,11 @@ export default function DailyReportScreen() {
     }
   };
 
+  const guide = (message) => {
+    setGuideText(message);
+    announce(message);
+  };
+
   return (
     <KeyboardAvoidingView style={styles.container} behavior={Platform.OS === "ios" ? "padding" : undefined}>
       <ScrollView contentContainerStyle={styles.content} keyboardShouldPersistTaps="handled">
@@ -107,6 +115,16 @@ export default function DailyReportScreen() {
 
         <Animated.View entering={FadeInDown.delay(100).duration(350)}>
           <Card style={styles.formCard}>
+            <View style={styles.voiceRow}>
+              <View style={styles.voiceLeft}>
+                <Ionicons name={voiceAssist ? "volume-high" : "volume-mute"} size={18} color={colors.primary} />
+                <View style={{ flex: 1 }}>
+                  <Text style={styles.voiceTitle}>Voice guide</Text>
+                  <Text style={styles.voiceText}>{guideText}</Text>
+                </View>
+              </View>
+              <Switch value={voiceAssist} onValueChange={setVoiceAssist} />
+            </View>
             <View style={styles.grid}>
               <Field
                 icon="pulse"
@@ -115,6 +133,7 @@ export default function DailyReportScreen() {
                 onChangeText={setHeartRate}
                 keyboardType="number-pad"
                 placeholder="72"
+                onFocus={() => guide("Enter your heart rate in beats per minute. Example, 72.")}
               />
               <Field
                 icon="water"
@@ -123,6 +142,7 @@ export default function DailyReportScreen() {
                 onChangeText={setBloodSugar}
                 keyboardType="number-pad"
                 placeholder="94"
+                onFocus={() => guide("Enter your blood sugar reading in milligrams per deciliter. Example, 94.")}
               />
             </View>
 
@@ -135,6 +155,7 @@ export default function DailyReportScreen() {
                 placeholder="120"
                 placeholderTextColor={colors.textMuted}
                 style={[styles.input, styles.bpInput]}
+                onFocus={() => guide("Enter the top blood pressure number, called systolic. Example, 120.")}
               />
               <Text style={styles.bpSlash}>/</Text>
               <TextInput
@@ -144,6 +165,7 @@ export default function DailyReportScreen() {
                 placeholder="80"
                 placeholderTextColor={colors.textMuted}
                 style={[styles.input, styles.bpInput]}
+                onFocus={() => guide("Enter the bottom blood pressure number, called diastolic. Example, 80.")}
               />
             </View>
 
@@ -159,6 +181,7 @@ export default function DailyReportScreen() {
                 placeholderTextColor={colors.textMuted}
                 multiline
                 style={[styles.input, styles.notes]}
+                onFocus={() => guide("Enter optional notes like symptoms, food timing, medication, or anything important.")}
               />
             </View>
 
@@ -220,6 +243,20 @@ const styles = StyleSheet.create({
   heroTitle: { fontSize: 18, fontWeight: "800", color: colors.text },
   heroSub: { fontSize: 11, color: colors.textMuted, marginTop: 3, lineHeight: 16 },
   formCard: { gap: spacing.md },
+  voiceRow: {
+    flexDirection: "row",
+    alignItems: "center",
+    justifyContent: "space-between",
+    gap: 12,
+    padding: 12,
+    backgroundColor: colors.surfaceAlt,
+    borderRadius: radius.md,
+    borderWidth: 1,
+    borderColor: colors.border,
+  },
+  voiceLeft: { flex: 1, flexDirection: "row", alignItems: "center", gap: 10 },
+  voiceTitle: { fontSize: 12, fontWeight: "800", color: colors.text },
+  voiceText: { fontSize: 10, color: colors.textMuted, marginTop: 2, lineHeight: 15 },
   grid: { flexDirection: "row", gap: spacing.sm },
   field: { flex: 1, gap: 7 },
   fieldLabelRow: { flexDirection: "row", alignItems: "center", gap: 6 },

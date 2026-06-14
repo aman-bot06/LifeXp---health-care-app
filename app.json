@@ -1,6 +1,7 @@
 {
   "expo": {
     "name": "lifexp-fixed",
+    "owner": "amanbot",
     "slug": "lifexp-fixed",
     "version": "1.0.0",
     "orientation": "portrait",
@@ -8,6 +9,8 @@
     "userInterfaceStyle": "automatic",
     "ios": {},
     "android": {
+      "package": "com.lifexp.healthcare",
+      "versionCode": 1,
       "predictiveBackGestureEnabled": false
     },
     "web": {
@@ -25,6 +28,11 @@
     ],
     "experiments": {
       "reactCompiler": true
+    },
+    "extra": {
+      "eas": {
+        "projectId": "9fa8a527-0071-4ae3-a442-ef85dd754f25"
+      }
     }
   }
 }
