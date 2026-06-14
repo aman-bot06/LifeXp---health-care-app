@@ -5,6 +5,7 @@
     "slug": "lifexp-fixed",
     "version": "1.0.0",
     "orientation": "portrait",
+    "icon": "./assets/images/icon.png",
     "scheme": "lifexpfixed",
     "userInterfaceStyle": "automatic",
     "ios": {},
@@ -21,6 +22,8 @@
       [
         "expo-splash-screen",
         {
+          "image": "./assets/images/splash-icon.png",
+          "resizeMode": "contain",
           "backgroundColor": "#F0E6DF"
         }
       ],

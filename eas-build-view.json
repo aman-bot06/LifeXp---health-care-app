@@ -1,0 +1,48 @@
+{
+  "id": "1177e5e1-4f18-4c1f-adf8-403afddd6966",
+  "status": "ERRORED",
+  "platform": "ANDROID",
+  "error": {
+    "errorCode": "EAS_BUILD_UNKNOWN_GRADLE_ERROR",
+    "message": "Gradle build failed with unknown error. See logs for the \"Run gradlew\" phase for more information."
+  },
+  "artifacts": {},
+  "fingerprint": {
+    "id": "019ec4a5-4afd-7556-89d5-30109438adeb",
+    "hash": "830ba84083fa0893f4d9b95e055ec1a5f92de6d5"
+  },
+  "initiatingActor": {
+    "id": "2d805da0-3ecd-48d8-9ddc-584f6a042f33",
+    "displayName": "amanbot"
+  },
+  "logFiles": [
+    "https://storage.googleapis.com/eas-workflows-production/logs/9fa8a527-0071-4ae3-a442-ef85dd754f25/1177e5e1-4f18-4c1f-adf8-403afddd6966/2026-06-14T05%3A40%3A29Z-a8a24d31-7837-40a2-91de-35b6c837fe50.txt?X-Goog-Algorithm=GOOG4-RSA-SHA256&X-Goog-Credential=www-production%40exponentjs.iam.gserviceaccount.com%2F20260614%2Fauto%2Fstorage%2Fgoog4_request&X-Goog-Date=20260614T055240Z&X-Goog-Expires=900&X-Goog-SignedHeaders=host&X-Goog-Signature=46bd50f8e6b81a84c86a7ce891dd591ab754765fd6ce44adf6cdfe647285dde78a6c34cc3635f19ae337def5f28085d74f89822a3603365d02ed782d3f3f3d3da2989fab8d00c3c1a8efec7d1824358f83dfb6ade3263ab92ae3db8598e7d6d3d92dc26a87048d1be2fab3f9b23e65e24e5e1dcc094d847fff40132f4552d9bad980d74e63e32614a38190ad50ab4d9f58e1d8e0c29b76e469ff28b281828e49d7649aa1eb49e35f667503019c8344a9b2b667c23565dcad223ac45f63184303f6fb13b3e224b00ce4481670e93c1bb4adee85098d442dc08edb5334f11cf3f6fea54899d10984089386dd11b2093e7f588ee8e96097134ffba83bd61923e4f6"
+  ],
+  "project": {
+    "id": "9fa8a527-0071-4ae3-a442-ef85dd754f25",
+    "name": "lifexp-fixed",
+    "slug": "lifexp-fixed",
+    "ownerAccount": {
+      "id": "5d286ec6-dd5a-4048-8643-f181806cc465",
+      "name": "amanbot"
+    }
+  },
+  "distribution": "STORE",
+  "buildProfile": "preview",
+  "sdkVersion": "56.0.0",
+  "appVersion": "1.0.0",
+  "appBuildVersion": "1",
+  "gitCommitHash": "6dcec1f1982d6055f3a69b942bfb4637769133cd",
+  "gitCommitMessage": "password from login removed",
+  "priority": "NORMAL_PLUS",
+  "createdAt": "2026-06-14T05:40:27.479Z",
+  "updatedAt": "2026-06-14T05:52:10.600Z",
+  "completedAt": "2026-06-14T05:52:10.434Z",
+  "expirationDate": "2026-07-14T05:40:27.510Z",
+  "isForIosSimulator": false,
+  "metrics": {
+    "buildWaitTime": 1668,
+    "buildQueueTime": 4746,
+    "buildDuration": 696541
+  }
+}

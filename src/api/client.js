@@ -3,13 +3,29 @@ import { Platform } from "react-native";
 // Android emulator: 10.0.2.2 | iOS simulator: localhost | Physical device: your PC LAN IP
 const DEV_HOST = Platform.OS === "android" ? "10.0.2.2" : "localhost";
 export const API_BASE = process.env.EXPO_PUBLIC_API_URL || `http://${DEV_HOST}:3001/api`;
+const REQUEST_TIMEOUT_MS = 15000;
 
 async function request(path, options = {}) {
   const url = `${API_BASE}${path}`;
-  const res = await fetch(url, {
-    headers: { "Content-Type": "application/json", ...options.headers },
-    ...options,
-  });
+  const controller = typeof AbortController !== "undefined" ? new AbortController() : null;
+  const timeout = controller ? setTimeout(() => controller.abort(), REQUEST_TIMEOUT_MS) : null;
+
+  let res;
+  try {
+    res = await fetch(url, {
+      headers: { "Content-Type": "application/json", ...options.headers },
+      ...options,
+      signal: controller?.signal,
+    });
+  } catch (error) {
+    if (error.name === "AbortError") {
+      throw new Error("Request timed out. Please try again.");
+    }
+    throw error;
+  } finally {
+    if (timeout) clearTimeout(timeout);
+  }
+
   const data = await res.json().catch(() => ({}));
   if (!res.ok) {
     const err = new Error(data.error || `Request failed (${res.status})`);
